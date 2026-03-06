@@ -1,0 +1,25 @@
+require_relative '../../config/database'
+
+def generate_tasks(sequence)
+
+  conn = db_connection
+
+  sequence["sequence"].each do |item|
+
+    pallet_id = item["pallet_id"]
+    order = item["sequence_order"]
+
+    pallet = conn.exec_params(
+      "SELECT outbound_truck_id FROM pallets WHERE id=$1",
+      [pallet_id]
+    )[0]
+
+    conn.exec_params(
+      "INSERT INTO tasks (pallet_id, truck_id, sequence_order, status)
+       VALUES ($1,$2,$3,$4)",
+      [pallet_id, pallet["outbound_truck_id"], order, "pending"]
+    )
+
+  end
+
+end
