@@ -12,18 +12,20 @@ post '/pallets' do
   conn = db_connection
 
   result = conn.exec_params(
-    "INSERT INTO pallets
-    (product_id, destination_id, priority, weight, status)
-    VALUES ($1,$2,$3,$4,$5)
-    RETURNING *",
-    [
-      data["product_id"],
-      data["destination_id"],
-      data["priority"],
-      data["weight"],
-      "created"
-    ]
-  )
+  "INSERT INTO pallets
+  (product_id, destination_id, priority, weight, status, current_location_id)
+  VALUES ($1,$2,$3,$4,$5,$6)
+  RETURNING *",
+  [
+    data["product_id"],
+    data["destination_id"],
+    data["priority"],
+    data["weight"],
+    "created",
+    4
+  ]
+)
+
 pallet = result[0]
 
   truck_id = assign_pallet_to_truck(pallet["id"])

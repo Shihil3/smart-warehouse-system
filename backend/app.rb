@@ -10,6 +10,10 @@ require_relative './app/services/task_generator'
 require_relative './app/services/optimization_trigger'
 require_relative './app/controllers/tasks_controller'
 require_relative './app/controllers/layout_controller'
+require_relative './app/services/congestion_detector'
+require_relative './app/controllers/alerts_controller'
+require_relative './app/controllers/auth_controller'
+require_relative './app/services/auth_middleware'
 
 get '/test-optimizer' do
 

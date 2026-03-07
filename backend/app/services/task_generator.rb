@@ -24,9 +24,18 @@ def generate_tasks(sequence)
 
     conn.exec_params(
       "INSERT INTO tasks
-      (pallet_id, truck_id, sequence_order, status)
-      VALUES ($1,$2,$3,$4)",
-      [pallet_id, pallet["outbound_truck_id"], order, "pending"]
+      (pallet_id, truck_id, sequence_order,
+       source_location_id, destination_location_id,
+       status)
+      VALUES ($1,$2,$3,$4,$5,$6)",
+      [
+        pallet_id,
+        pallet["outbound_truck_id"],
+        order,
+        pallet["current_location_id"],
+        dock["dock_location_id"],
+        "pending"
+      ]
     )
 
   end

@@ -4,6 +4,8 @@ require_relative '../../config/database'
 
 # Create Destination
 post '/destinations' do
+  require_manager(request)
+
   data = JSON.parse(request.body.read)
 
   conn = db_connection
@@ -25,6 +27,8 @@ end
 
 # Get Destinations
 get '/destinations' do
+  require_manager(request)
+  
   conn = db_connection
 
   destinations = conn.exec("SELECT * FROM destinations")

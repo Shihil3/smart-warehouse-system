@@ -4,6 +4,8 @@ require_relative '../../config/database'
 
 # Create Product
 post '/products' do
+  require_manager(request)
+
   data = JSON.parse(request.body.read)
 
   conn = db_connection
@@ -27,6 +29,7 @@ end
 
 # Get Products
 get '/products' do
+  require_manager(request)
   conn = db_connection
 
   products = conn.exec("SELECT * FROM products")
