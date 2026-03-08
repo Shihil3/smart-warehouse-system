@@ -32,14 +32,20 @@ end
 # Complete task
 post '/tasks/:id/complete' do
   require_worker(request)
-  
+
   conn = db_connection
 
-  task = conn.exec_params(
+  result = conn.exec_params(
     "SELECT pallet_id,destination_location_id
      FROM tasks WHERE id=$1",
     [params[:id]]
-  )[0]
+  )
+
+  if result.ntuples == 0
+    halt 404, {error: "Task not found"}.to_json
+  end
+
+  task = result[0]
 
   conn.exec_params(
     "UPDATE tasks SET status='completed' WHERE id=$1",
@@ -53,5 +59,5 @@ post '/tasks/:id/complete' do
     [task["destination_location_id"], task["pallet_id"]]
   )
 
-  { message: "Task completed and pallet moved" }.to_json
+  {message: "Task completed and pallet moved"}.to_json
 end

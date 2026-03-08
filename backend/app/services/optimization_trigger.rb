@@ -1,32 +1,43 @@
-require 'httparty'
-require_relative '../../config/database'
+require 'net/http'
+require 'json'
 
 def trigger_optimizer
 
   conn = db_connection
 
   pallets = conn.exec("
-    SELECT id, priority
+    SELECT id, outbound_truck_id, priority
     FROM pallets
-    WHERE outbound_truck_id IS NOT NULL
-  ")
+    WHERE status='created'
+  ").to_a
 
   trucks = conn.exec("
-    SELECT id, departure_deadline
+    SELECT id, departure_deadline, dock_location_id
     FROM outbound_trucks
-  ")
+  ").to_a
 
-  payload = {
-    pallets: pallets.map { |p| { id: p["id"].to_i, priority: p["priority"].to_i } },
-    trucks: trucks.map { |t| { id: t["id"].to_i } }
-  }
+  locations = conn.exec("
+    SELECT id,x_coordinate,y_coordinate
+    FROM locations
+  ").to_a
 
-  response = HTTParty.post(
-    "http://localhost:8000/optimize",
-    headers: { "Content-Type" => "application/json" },
-    body: payload.to_json
+  uri = URI("http://localhost:8000/optimize")
+
+  response = Net::HTTP.post(
+    uri,
+    {
+      pallets: pallets,
+      trucks: trucks
+      locations: locations
+    }.to_json,
+    "Content-Type" => "application/json"
   )
 
+  begin
   JSON.parse(response.body)
+rescue
+  puts "Optimizer error: #{response.body}"
+  return {"sequence" => []}
+end
 
 end

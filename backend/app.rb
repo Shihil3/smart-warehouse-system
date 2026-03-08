@@ -1,5 +1,17 @@
 require 'sinatra'
 require 'json'
+require 'sinatra/cross_origin'
+
+configure do
+  enable :cross_origin
+end
+
+before do
+  response.headers['Access-Control-Allow-Origin'] = '*'
+  response.headers['Access-Control-Allow-Headers'] = '*'
+  response.headers['Access-Control-Allow-Methods'] = ['GET','POST','OPTIONS']
+end
+
 require_relative './app/controllers/products_controller'
 require_relative './app/controllers/destinations_controller'
 require_relative './config/database'

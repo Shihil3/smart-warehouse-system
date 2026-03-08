@@ -9,5 +9,11 @@ def home():
 
 @app.post("/optimize")
 def optimize(data: dict):
-    sequence = optimize_sequence(data)
+
+    pallets = data.get("pallets", [])
+    trucks = data.get("trucks", [])
+    locations = data.get("locations", [])
+
+    sequence = optimize_sequence(pallets, trucks, locations)
+
     return {"sequence": sequence}

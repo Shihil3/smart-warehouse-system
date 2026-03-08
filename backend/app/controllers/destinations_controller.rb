@@ -28,7 +28,7 @@ end
 # Get Destinations
 get '/destinations' do
   require_manager(request)
-  
+
   conn = db_connection
 
   destinations = conn.exec("SELECT * FROM destinations")

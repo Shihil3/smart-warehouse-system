@@ -7,7 +7,10 @@ require_relative '../services/task_generator'
 
 # Create Pallet
 post '/pallets' do
-  data = JSON.parse(request.body.read)
+  body = request.body.read
+  halt 400, {error: "Request body required"}.to_json if body.empty?
+
+  data = JSON.parse(body)
 
   conn = db_connection
 
@@ -28,12 +31,19 @@ post '/pallets' do
 
 pallet = result[0]
 
-  truck_id = assign_pallet_to_truck(pallet["id"])
-  sequence = trigger_optimizer
-  generate_tasks(sequence)
+truck_id = assign_pallet_to_truck(pallet["id"])
 
- {
-  pallet: pallet,
+# fetch updated pallet
+updated_pallet = conn.exec_params(
+  "SELECT * FROM pallets WHERE id=$1",
+  [pallet["id"]]
+)[0]
+
+sequence = trigger_optimizer
+generate_tasks(sequence)
+
+{
+  pallet: updated_pallet,
   assigned_truck: truck_id,
   optimization_sequence: sequence
 }.to_json
