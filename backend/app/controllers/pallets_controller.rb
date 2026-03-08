@@ -13,17 +13,18 @@ post '/pallets' do
   data = JSON.parse(body)
 
   conn = db_connection
-
-  result = conn.exec_params(
+  halt 400, {error:"inbound_truck_id required"}.to_json unless data["inbound_truck_id"]
+result = conn.exec_params(
   "INSERT INTO pallets
-  (product_id, destination_id, priority, weight, status, current_location_id)
-  VALUES ($1,$2,$3,$4,$5,$6)
+  (product_id, destination_id, priority, weight, inbound_truck_id, status, current_location_id)
+  VALUES ($1,$2,$3,$4,$5,$6,$7)
   RETURNING *",
   [
     data["product_id"],
     data["destination_id"],
     data["priority"],
     data["weight"],
+    data["inbound_truck_id"],   # new field
     "created",
     4
   ]
@@ -59,3 +60,42 @@ get '/pallets' do
 
   pallets.to_a.to_json
 end
+
+qr = data["pallet_code"]
+
+parts = qr.split("|")
+
+halt 400, {error:"Invalid QR format"} unless parts[0] == "PALLET"
+
+product_id = parts[1]
+destination_id = parts[2]
+priority = parts[3]
+weight = parts[4]
+inbound_truck_id = parts[5]
+
+result = db_connection.exec_params(
+  "INSERT INTO pallets
+  (product_id, destination_id, priority, weight, inbound_truck_id, status, current_location_id)
+  VALUES ($1,$2,$3,$4,$5,$6,$7)
+  RETURNING *",
+  [
+    product_id,
+    destination_id,
+    priority,
+    weight,
+    inbound_truck_id,
+    "created",
+    4
+  ]
+)
+
+pallet = result[0]
+
+log_event(
+  "SCAN_EVENT",
+  pallet["id"],
+  4,
+  "Pallet registered via QR scan"
+)
+
+pallet.to_json

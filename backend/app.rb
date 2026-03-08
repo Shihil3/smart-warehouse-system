@@ -12,6 +12,10 @@ before do
   response.headers['Access-Control-Allow-Methods'] = ['GET','POST','OPTIONS']
 end
 
+options "*" do
+  200
+end
+
 require_relative './app/controllers/products_controller'
 require_relative './app/controllers/destinations_controller'
 require_relative './config/database'
@@ -26,6 +30,9 @@ require_relative './app/services/congestion_detector'
 require_relative './app/controllers/alerts_controller'
 require_relative './app/controllers/auth_controller'
 require_relative './app/services/auth_middleware'
+require_relative './app/controllers/inbound_trucks_controller'
+require_relative './app/services/event_logger'
+require_relative './app/controllers/events_controller'
 
 get '/test-optimizer' do
 

@@ -1,67 +1,29 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
-import WarehouseGrid from "./components/WarehouseGrid";
-import TaskPanel from "./components/TaskPanel";
-import ManagerPanel from "./components/ManagerPanel";
+import { useState } from "react";
+import Login from "./pages/Login";
+import ManagerDashboard from "./pages/ManagerDashboard";
+import WorkerDashboard from "./pages/WorkerDashboard";
 
 function App() {
 
-  const [layout, setLayout] = useState(null);
+  const [user, setUser] = useState(
+    localStorage.getItem("role")
+      ? { role: localStorage.getItem("role") }
+      : null
+  );
+  const [scannedPallet, setScannedPallet] = useState(null);
 
-  const fetchLayout = () => {
-    axios.get("http://localhost:4567/layout")
-      .then(res => setLayout(res.data))
-      .catch(err => console.error(err));
-  };
+  if (!user) {
+    return <Login setUser={setUser} />;
+  }
 
-  useEffect(() => {
-    fetchLayout();
+  if (user.role === "manager") {
+    return <ManagerDashboard />;
+  }
 
-    const interval = setInterval(fetchLayout, 3000); // refresh every 3 seconds
+  if (user.role === "worker") {
+    return <WorkerDashboard />;
+  }
 
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-  <div style={{
-    padding:"20px",
-    fontFamily:"Arial"
-  }}>
-
-    <h1 style={{marginBottom:"30px"}}>
-      Smart Warehouse Control Dashboard
-    </h1>
-
-    {!layout && <p>Loading warehouse...</p>}
-
-    {layout && (
-      <>
-
-        <div style={{
-          display:"grid",
-          gridTemplateColumns:"2fr 1fr",
-          gap:"40px"
-        }}>
-
-          <div>
-            <WarehouseGrid
-              locations={layout.locations}
-              pallets={layout.pallets}
-            />
-          </div>
-
-          <div>
-            <TaskPanel />
-            <ManagerPanel />
-          </div>
-
-        </div>
-
-      </>
-    )}
-
-  </div>
-);
 }
 
 export default App;

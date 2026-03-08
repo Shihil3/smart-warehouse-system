@@ -27,7 +27,7 @@ def trigger_optimizer
     uri,
     {
       pallets: pallets,
-      trucks: trucks
+      trucks: trucks,
       locations: locations
     }.to_json,
     "Content-Type" => "application/json"

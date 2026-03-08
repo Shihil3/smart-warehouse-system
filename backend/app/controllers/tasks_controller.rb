@@ -60,4 +60,10 @@ post '/tasks/:id/complete' do
   )
 
   {message: "Task completed and pallet moved"}.to_json
+  log_event(
+    "PALLET_MOVED",
+    pallet_id,
+    destination_location_id,
+    "Pallet moved to new location"
+  )
 end
