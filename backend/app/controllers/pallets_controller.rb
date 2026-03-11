@@ -61,6 +61,13 @@ get '/pallets' do
   pallets.to_a.to_json
 end
 
+post '/scan' do
+
+body=request.body.read
+halt 400,{error:"Request body required"}.to_json if body.empty?
+
+data=JSON.parse(body)
+
 qr = data["pallet_code"]
 
 parts = qr.split("|")
@@ -99,3 +106,5 @@ log_event(
 )
 
 pallet.to_json
+
+end
