@@ -33,6 +33,9 @@ def trigger_optimizer
     "Content-Type" => "application/json"
   )
 
+  puts "Optimizer response"
+  puts response.body
+
   begin
   JSON.parse(response.body)
 rescue

@@ -21,11 +21,11 @@ function TaskPanel() {
       .then(fetchTasks);
   };
 
-  /*useEffect(() => {
+  useEffect(() => {
     fetchTasks();
     const interval = setInterval(fetchTasks, 3000);
     return () => clearInterval(interval);
-  }, []);*/
+  }, []);
 
   return (
     <div style={{marginTop:"30px"}}>

@@ -14,11 +14,11 @@ function ManagerPanel() {
       .then(res => setAlerts(res.data));
   };
 
- // useEffect(() => {
-   // fetchData();
-    //const interval = setInterval(fetchData, 5000);
-    //return () => clearInterval(interval);
- // }, []);
+ useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div style={{marginTop:"30px"}}>
