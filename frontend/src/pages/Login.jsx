@@ -30,7 +30,7 @@ function Login({ setUser }) {
   };
 
   return (
-    <div style={{padding:"40px"}}>
+    <div className="Login-page">
 
       <h2>Warehouse Login</h2>
 
