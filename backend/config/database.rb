@@ -5,6 +5,7 @@ def db_connection
     dbname: "warehouse_db",
     user: "warehouse_user",
     password: "warehouse_pass",
-    host: "localhost"
+    host: "localhost",
+    port: 5433
   )
 end

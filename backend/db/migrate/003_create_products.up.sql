@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS products (
+  id SERIAL PRIMARY KEY,
+  sku VARCHAR(100) UNIQUE NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(100),
+  weight FLOAT,
+  volume FLOAT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
