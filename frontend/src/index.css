@@ -24,10 +24,9 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: #8a817c;
 }
 
 h1 {
@@ -66,3 +65,33 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+/*Login.jsx*/
+
+.Login-page{
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100vh;
+
+  > h2{
+    color: #463f3a;
+  }
+
+  > input{
+    padding: 5px;
+    border-radius: 5px;
+    width: 300px;
+    background-color: #f4f3ee;
+    color: black;
+  }
+
+  > button{
+    background-color: #e0afa0;
+    color: #463f3a;
+    width: 150px;
+  }
+}
+
+

@@ -8,3 +8,6 @@ gem "httparty"
 gem "bcrypt"
 gem "jwt"
 gem "sinatra-cross_origin"
+
+gem "rackup", "~> 2.3"
+gem "puma", "~> 7.2"
