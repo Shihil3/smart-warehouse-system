@@ -3,7 +3,7 @@ import axios from "axios";
 import WarehouseGrid from "../components/WarehouseGrid";
 import ManagerPanel from "../components/ManagerPanel";
 
-function ManagerDashboard() {
+function ManagerDashboard({ onLogout }) {
 
   const [layout, setLayout] = useState(null);
 
@@ -17,7 +17,10 @@ function ManagerDashboard() {
   return (
     <div>
 
-      <h1>Manager Dashboard</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>Manager Dashboard</h1>
+        <button onClick={onLogout}>Logout</button>
+      </div>
 
       <WarehouseGrid
         locations={layout.locations}

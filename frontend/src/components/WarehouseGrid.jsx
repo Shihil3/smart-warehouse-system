@@ -84,6 +84,7 @@ function WarehouseGrid({ locations, pallets, scannedPallet }) {
                         padding: "2px",
                         marginBottom: "2px",
                         borderRadius: "4px",
+                        fontWeight: "bold", color: "#333",
                         background:
                           pid == scannedPallet
                             ? "#ffeb3b"
