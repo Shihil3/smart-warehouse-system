@@ -16,12 +16,18 @@ function App() {
     return <Login setUser={setUser} />;
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    setUser(null);
+  };
+
   if (user.role === "manager") {
-    return <ManagerDashboard />;
+    return <ManagerDashboard onLogout={handleLogout} />;
   }
 
   if (user.role === "worker") {
-    return <WorkerDashboard />;
+    return <WorkerDashboard onLogout={handleLogout} />;
   }
 
 }

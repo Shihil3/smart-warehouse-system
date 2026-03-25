@@ -1,12 +1,15 @@
 import TaskPanel from "../components/TaskPanel";
 import PalletScanner from "../components/PalletScanner";
 
-function WorkerDashboard() {
+function WorkerDashboard({ onLogout }) {
 
   return (
     <div>
 
-      <h1>Worker Dashboard</h1>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>Worker Dashboard</h1>
+        <button onClick={onLogout}>Logout</button>
+      </div>
 
       <PalletScanner />
 

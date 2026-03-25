@@ -56,3 +56,37 @@ psql -U warehouse_user -d warehouse_db -h localhost -p 5433 -f db/seeds.sql
 ```
 
 This inserts 4 zones, 9 locations (docks, storage, staging), and a default manager user.
+
+TO run backend
+```bash
+ruby app.rb
+```
+
+to run frontend
+
+```bash
+npm run dev
+```
+
+to run optimizer
+
+first create virtual environment
+```bash
+python -m venv venv
+```
+
+once created 
+run this
+```bash
+.\venv\Scripts\activate
+```
+
+install the requirements
+```bash
+pip install -r requirements.txt
+```
+
+final command to run 
+```bash
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
