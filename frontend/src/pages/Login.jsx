@@ -30,14 +30,14 @@ function Login({ setUser }) {
   };
 
   return (
-    <div className="Login-page">
+    <div className="flex flex-col items-center justify-center h-screen">
+      <h2 className="text-[#463f3a] mb-[20px] text-[24px]">Warehouse Login</h2>
 
-      <h2>Warehouse Login</h2>
-
-      <input
+      <input 
         placeholder="Email"
         value={email}
         onChange={e => setEmail(e.target.value)}
+        className="p-[5px] rounded-[5px] w-[300px] bg-[#f4f3ee] text-black"
       />
 
       <br/><br/>
@@ -47,11 +47,12 @@ function Login({ setUser }) {
         placeholder="Password"
         value={password}
         onChange={e => setPassword(e.target.value)}
+        className="p-[5px] rounded-[5px] w-[300px] bg-[#f4f3ee] text-black"
       />
 
       <br/><br/>
 
-      <button onClick={login}>
+      <button onClick={login} className="bg-[#e0afa0] text-[#463f3a] w-[150px]">
         Login
       </button>
 
@@ -61,3 +62,5 @@ function Login({ setUser }) {
 }
 
 export default Login;
+
+

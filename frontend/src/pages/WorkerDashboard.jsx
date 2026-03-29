@@ -6,7 +6,7 @@ function WorkerDashboard({ onLogout }) {
   return (
     <div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="flex justify-between items-center mb-4">
         <h1>Worker Dashboard</h1>
         <button onClick={onLogout}>Logout</button>
       </div>

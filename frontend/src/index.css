@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -41,7 +43,6 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
 }
@@ -65,33 +66,3 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
-
-/*Login.jsx*/
-
-.Login-page{
-  display:flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: column;
-  height: 100vh;
-
-  > h2{
-    color: #463f3a;
-  }
-
-  > input{
-    padding: 5px;
-    border-radius: 5px;
-    width: 300px;
-    background-color: #f4f3ee;
-    color: black;
-  }
-
-  > button{
-    background-color: #e0afa0;
-    color: #463f3a;
-    width: 150px;
-  }
-}
-
-

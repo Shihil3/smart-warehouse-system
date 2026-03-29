@@ -10,11 +10,11 @@ function App() {
       ? { role: localStorage.getItem("role") }
       : null
   );
-  const [scannedPallet, setScannedPallet] = useState(null);
 
   if (!user) {
     return <Login setUser={setUser} />;
   }
+  
 
   const handleLogout = () => {
     localStorage.removeItem("token");
