@@ -33,6 +33,11 @@ require_relative './app/services/auth_middleware'
 require_relative './app/controllers/inbound_trucks_controller'
 require_relative './app/services/event_logger'
 require_relative './app/controllers/events_controller'
+require_relative './app/controllers/racks_controller'
+require_relative './app/services/rack_assignment_service'
+require_relative './app/controllers/inventory_controller'
+require_relative './app/controllers/workers_controller'
+require_relative './app/controllers/kpis_controller'
 
 get '/test-optimizer' do
 

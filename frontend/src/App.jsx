@@ -1,29 +1,30 @@
 import { useState } from "react";
-import Login from "./pages/Login";
+import Login            from "./pages/Login";
 import ManagerDashboard from "./pages/ManagerDashboard";
-import WorkerDashboard from "./pages/WorkerDashboard";
+import WorkerDashboard  from "./pages/WorkerDashboard";
+import Navbar           from "./components/Navbar";
 
 function App() {
+  const [user, setUser] = useState(() => {
+    const role = localStorage.getItem("role");
+    const name = localStorage.getItem("name");
+    return role ? { role, name } : null;
+  });
 
-  const [user, setUser] = useState(
-    localStorage.getItem("role")
-      ? { role: localStorage.getItem("role") }
-      : null
+  const handleLogout = () => {
+    ["token", "role", "name", "user_id"].forEach(k => localStorage.removeItem(k));
+    setUser(null);
+  };
+
+  if (!user) return <Login setUser={setUser} />;
+
+  return (
+    <div style={{ minHeight: "100vh", background: "var(--bg)" }}>
+      <Navbar role={user.role} name={user.name} onLogout={handleLogout} />
+      {user.role === "manager" && <ManagerDashboard />}
+      {user.role === "worker"  && <WorkerDashboard  workerName={user.name} />}
+    </div>
   );
-  const [scannedPallet, setScannedPallet] = useState(null);
-
-  if (!user) {
-    return <Login setUser={setUser} />;
-  }
-
-  if (user.role === "manager") {
-    return <ManagerDashboard />;
-  }
-
-  if (user.role === "worker") {
-    return <WorkerDashboard />;
-  }
-
 }
 
 export default App;

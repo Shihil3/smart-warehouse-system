@@ -1,48 +1,68 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-function ManagerPanel() {
+const API = "http://localhost:4567";
 
-  const [trucks, setTrucks] = useState([]);
+function ManagerPanel() {
   const [alerts, setAlerts] = useState([]);
 
-  const fetchData = () => {
-    axios.get("http://localhost:4567/outbound-trucks")
-      .then(res => setTrucks(res.data));
-
-    axios.get("http://localhost:4567/alerts")
-      .then(res => setAlerts(res.data));
+  const fetchAlerts = () => {
+    axios.get(`${API}/alerts`).then(res => setAlerts(res.data)).catch(() => {});
   };
 
- useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 5000);
-    return () => clearInterval(interval);
+  useEffect(() => {
+    fetchAlerts();
+    const iv = setInterval(fetchAlerts, 5000);
+    return () => clearInterval(iv);
   }, []);
 
   return (
-    <div style={{marginTop:"30px"}}>
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <h2>Congestion Alerts</h2>
+        <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>Auto-refreshes every 5s</span>
+      </div>
 
-      <h2>Manager Panel</h2>
-
-      <h3>Outbound Trucks</h3>
-
-      {trucks.map(t => (
-        <div key={t.id}>
-          Truck {t.truck_number} → Dock {t.dock_location_id}
+      {alerts.length === 0 ? (
+        <div style={{
+          textAlign:    "center",
+          padding:      "40px 20px",
+          color:        "var(--text-muted)",
+          border:       "2px dashed var(--border)",
+          borderRadius: "10px",
+        }}>
+          <div style={{ fontSize: "28px", marginBottom: "8px" }}>✅</div>
+          No congestion alerts — all docks are clear.
         </div>
-      ))}
-
-      <h3 style={{marginTop:"20px"}}>Congestion Alerts</h3>
-
-      {alerts.length === 0 && <p>No alerts</p>}
-
-      {alerts.map(a => (
-        <div key={a.id} style={{color:"red"}}>
-          ⚠ {a.message}
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {alerts.map(a => (
+            <div key={a.id} style={{
+              display:      "flex",
+              alignItems:   "flex-start",
+              gap:          "12px",
+              background:   a.severity === "critical" ? "#fee2e2" : "#fef3c7",
+              border:       `1px solid ${a.severity === "critical" ? "#fca5a5" : "#fde68a"}`,
+              borderLeft:   `4px solid ${a.severity === "critical" ? "#dc2626" : "#d97706"}`,
+              borderRadius: "8px",
+              padding:      "12px 16px",
+            }}>
+              <span style={{ fontSize: "18px", flexShrink: 0 }}>
+                {a.severity === "critical" ? "🔴" : "⚠️"}
+              </span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: "13px", color: a.severity === "critical" ? "#991b1b" : "#92400e" }}>
+                  {a.severity === "critical" ? "Critical" : "Warning"}
+                </div>
+                <div style={{ fontSize: "13px", color: "#1e293b", marginTop: "2px" }}>{a.message}</div>
+                <div style={{ fontSize: "11px", color: "var(--text-muted)", marginTop: "4px" }}>
+                  {new Date(a.created_at).toLocaleString()}
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
-
+      )}
     </div>
   );
 }
