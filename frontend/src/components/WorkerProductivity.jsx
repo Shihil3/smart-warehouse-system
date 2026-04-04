@@ -379,9 +379,10 @@ function WorkerProductivity() {
               </thead>
               <tbody>
                 {tasks.map(t => {
-                  const dur = t.started_at && t.completed_at
+                  const durRaw = t.started_at && t.completed_at
                     ? Math.round((new Date(t.completed_at) - new Date(t.started_at)) / 60000)
                     : null;
+                  const dur = durRaw !== null && !isNaN(durRaw) ? durRaw : null;
                   return (
                     <tr key={t.id}>
                       <td style={{ color: "var(--text-muted)" }}>{t.sequence_order ?? "—"}</td>

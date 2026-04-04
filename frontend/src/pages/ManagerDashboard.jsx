@@ -24,18 +24,32 @@ const TABS = [
 ];
 
 function ManagerDashboard({ onLogout }) {
-  const [layout, setLayout]   = useState(null);
-  const [activeTab, setTab]   = useState("overview");
+  const [layout, setLayout]       = useState(null);
+  const [layoutError, setLayoutError] = useState(null);
+  const [activeTab, setTab]       = useState("overview");
 
-  useEffect(() => {
+  const loadLayout = () => {
+    setLayoutError(null);
     axios.get("http://localhost:4567/layout")
-      .then(res => setLayout(res.data));
-  }, []);
+      .then(res => setLayout(res.data))
+      .catch(() => setLayoutError("Could not load warehouse layout. Check the backend server."));
+  };
 
-  if (!layout) {
+  useEffect(() => { loadLayout(); }, []);
+
+  if (!layout && !layoutError) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "40vh" }}>
         <p style={{ color: "var(--text-muted)" }}>Loading warehouse…</p>
+      </div>
+    );
+  }
+
+  if (layoutError) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "40vh", gap: "12px" }}>
+        <div className="msg-error">{layoutError}</div>
+        <button className="btn btn-primary" onClick={loadLayout}>Retry</button>
       </div>
     );
   }

@@ -19,8 +19,12 @@ function Login({ setUser }) {
       localStorage.setItem("user_id",    res.data.user_id || "");
       localStorage.setItem("is_leadman", res.data.is_leadman ? "true" : "false");
       setUser({ role: res.data.role, name: res.data.name, isLeadman: !!res.data.is_leadman });
-    } catch {
-      setError("Invalid email or password.");
+    } catch (err) {
+      if (err.response) {
+        setError("Invalid email or password.");
+      } else {
+        setError("Cannot reach the server. Make sure the backend is running.");
+      }
     } finally {
       setLoading(false);
     }

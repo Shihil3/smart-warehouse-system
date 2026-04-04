@@ -7,6 +7,18 @@ require_relative '../services/broadcaster'
 # Each connected client receives live warehouse_event, accident_report,
 # accident_update, task_event, and ping messages.
 get '/stream' do
+  # Validate token from query param (EventSource API cannot send headers)
+  unless DEV_MODE
+    token = params[:token]
+    halt 401, 'data: {"error":"Unauthorized"}\n\n' unless token
+    begin
+      decoded = JWT.decode(token, SECRET_KEY, true, { algorithm: 'HS256' })
+      halt 401, 'data: {"error":"Unauthorized"}\n\n' unless decoded[0]
+    rescue
+      halt 401, 'data: {"error":"Unauthorized"}\n\n'
+    end
+  end
+
   content_type 'text/event-stream'
   headers(
     'Cache-Control'     => 'no-cache',

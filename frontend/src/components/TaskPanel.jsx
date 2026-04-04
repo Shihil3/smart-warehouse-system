@@ -100,8 +100,8 @@ function TaskPanel({ externalTasks, onRefresh }) {
     axios.get(`${API}/tasks`).then(res => setInternalTasks(res.data)).catch(() => {});
   };
 
-  const startTask    = id => axios.post(`${API}/tasks/${id}/start`).then(refresh);
-  const completeTask = id => axios.post(`${API}/tasks/${id}/complete`).then(refresh);
+  const startTask    = id => axios.post(`${API}/tasks/${id}/start`).then(refresh).catch(() => {});
+  const completeTask = id => axios.post(`${API}/tasks/${id}/complete`).then(refresh).catch(() => {});
 
   useEffect(() => {
     if (isControlled) return; // parent owns polling
