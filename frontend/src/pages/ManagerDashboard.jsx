@@ -9,6 +9,7 @@ import InventoryView       from "../components/InventoryView";
 import DashboardCharts     from "../components/DashboardCharts";
 import WorkerProductivity  from "../components/WorkerProductivity";
 import KpiDashboard        from "../components/KpiDashboard";
+import AccidentReport      from "../components/AccidentReport";
 
 const TABS = [
   { key: "overview",   label: "📊 Overview"          },
@@ -17,6 +18,7 @@ const TABS = [
   { key: "trucks",     label: "🚛 Truck Management"   },
   { key: "workers",    label: "👷 Workers"            },
   { key: "kpis",       label: "📈 KPIs"               },
+  { key: "incidents",  label: "🚨 Incidents"          },
   { key: "locations",  label: "🏷️ Location QR Codes" },
   { key: "alerts",     label: "⚠️ Alerts"             },
 ];
@@ -136,6 +138,16 @@ function ManagerDashboard({ onLogout }) {
         )}
 
         {activeTab === "kpis" && <KpiDashboard />}
+
+        {activeTab === "incidents" && (
+          <div>
+            <h2 style={{ marginBottom: "4px" }}>Incident Reports</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px" }}>
+              Review and resolve accident and hazard reports from workers.
+            </p>
+            <AccidentReport />
+          </div>
+        )}
 
         {activeTab === "locations" && (
           <div>

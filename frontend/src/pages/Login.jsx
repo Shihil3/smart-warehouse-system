@@ -13,11 +13,12 @@ function Login({ setUser }) {
     setLoading(true);
     try {
       const res = await axios.post("http://localhost:4567/login", { email, password });
-      localStorage.setItem("token",   res.data.token);
-      localStorage.setItem("role",    res.data.role);
-      localStorage.setItem("name",    res.data.name    || email);
-      localStorage.setItem("user_id", res.data.user_id || "");
-      setUser({ role: res.data.role, name: res.data.name });
+      localStorage.setItem("token",      res.data.token);
+      localStorage.setItem("role",       res.data.role);
+      localStorage.setItem("name",       res.data.name    || email);
+      localStorage.setItem("user_id",    res.data.user_id || "");
+      localStorage.setItem("is_leadman", res.data.is_leadman ? "true" : "false");
+      setUser({ role: res.data.role, name: res.data.name, isLeadman: !!res.data.is_leadman });
     } catch {
       setError("Invalid email or password.");
     } finally {

@@ -7,13 +7,18 @@ configure do
 end
 
 before do
-  response.headers['Access-Control-Allow-Origin'] = '*'
-  response.headers['Access-Control-Allow-Headers'] = '*'
-  response.headers['Access-Control-Allow-Methods'] = ['GET','POST','OPTIONS']
+  response.headers['Access-Control-Allow-Origin']  = '*'
+  response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+  response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+  # Default all responses to JSON — SSE and any HTML endpoints override this themselves
+  content_type :json unless request.path_info == '/stream'
 end
 
 options "*" do
-  200
+  response.headers['Access-Control-Allow-Origin']  = '*'
+  response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
+  response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
+  halt 200
 end
 
 require_relative './app/controllers/products_controller'
@@ -38,6 +43,9 @@ require_relative './app/services/rack_assignment_service'
 require_relative './app/controllers/inventory_controller'
 require_relative './app/controllers/workers_controller'
 require_relative './app/controllers/kpis_controller'
+require_relative './app/services/broadcaster'
+require_relative './app/controllers/stream_controller'
+require_relative './app/controllers/accident_reports_controller'
 
 get '/test-optimizer' do
 

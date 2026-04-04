@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'json'
 require_relative '../../config/database'
+require_relative '../services/broadcaster'
 
 # GET /tasks — includes location labels + worker info
 get '/tasks' do
@@ -42,6 +43,12 @@ post '/tasks/:id/start' do
     [worker_id, params[:id]]
   )
 
+  Broadcaster.broadcast('task_event', {
+    type:      'started',
+    task_id:   params[:id].to_i,
+    worker_id: worker_id,
+  })
+
   { message: "Task started" }.to_json
 end
 
@@ -64,6 +71,12 @@ post '/tasks/:id/complete' do
   )
   log_event("PALLET_MOVED", task["pallet_id"], task["destination_location_id"],
             "Pallet moved manually (task ##{params[:id]})")
+
+  Broadcaster.broadcast('task_event', {
+    type:      'completed',
+    task_id:   params[:id].to_i,
+    pallet_id: task["pallet_id"].to_i,
+  })
 
   { message: "Task completed and pallet moved" }.to_json
 end

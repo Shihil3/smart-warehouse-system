@@ -1,44 +1,75 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import TaskPanel         from "../components/TaskPanel";
-import PalletScanner     from "../components/PalletScanner";
+import TaskPanel          from "../components/TaskPanel";
+import PalletScanner      from "../components/PalletScanner";
 import DestinationScanner from "../components/DestinationScanner";
+import AccidentReport     from "../components/AccidentReport";
+import LeadmanTrucks      from "../components/LeadmanTrucks";
 
 const API = "http://localhost:4567";
 
-const TABS = [
-  { key: "tasks",    label: "📋 Task Queue"              },
-  { key: "complete", label: "📍 Complete by QR Scan"     },
-  { key: "receive",  label: "📷 Receive Pallet (QR)"     },
+const BASE_TABS = [
+  { key: "tasks",    label: "📋 Task Queue"          },
+  { key: "complete", label: "📍 Complete by QR Scan" },
+  { key: "receive",  label: "📷 Receive Pallet (QR)" },
+  { key: "incident", label: "🚨 Report Incident"     },
 ];
 
-function WorkerDashboard({ workerName }) {
-  const [activeTab, setTab]           = useState("tasks");
-  const [tasks, setTasks]             = useState([]);
-  const [scannedPallet, setScanned]   = useState(null);
+const LEADMAN_TABS = [
+  { key: "trucks",   label: "🚛 Truck Management"    },
+];
+
+function WorkerDashboard({ workerName, isLeadman: initialLeadman }) {
+  const [activeTab,     setTab]      = useState("tasks");
+  const [tasks,         setTasks]    = useState([]);
+  const [scannedPallet, setScanned]  = useState(null);
+  // Use local state so a manager-promoted leadman sees truck tabs without re-login
+  const [isLeadman,     setIsLeadman] = useState(initialLeadman);
+
+  const tabs = isLeadman ? [...BASE_TABS, ...LEADMAN_TABS] : BASE_TABS;
 
   const fetchTasks = () => {
     axios.get(`${API}/tasks`).then(res => setTasks(res.data)).catch(() => {});
   };
 
   useEffect(() => {
+    // Fetch live profile so is_leadman reflects DB state, not stale JWT
+    axios.get(`${API}/me`).then(res => {
+      const live = res.data.is_leadman === true || res.data.is_leadman === 't';
+      setIsLeadman(live);
+      localStorage.setItem("is_leadman", live ? "true" : "false");
+    }).catch(() => {});
+
     fetchTasks();
     const iv = setInterval(fetchTasks, 4000);
     return () => clearInterval(iv);
   }, []);
 
-  const activeTasks    = tasks.filter(t => t.status === "in_progress").length;
-  const pendingTasks   = tasks.filter(t => t.status === "pending").length;
+  const activeTasks  = tasks.filter(t => t.status === "in_progress").length;
+  const pendingTasks = tasks.filter(t => t.status === "pending").length;
 
   return (
     <div className="page-wrapper">
       {/* Header */}
       <div style={{ marginBottom: "24px" }}>
-        <h1>
-          {workerName ? `Welcome, ${workerName}` : "Worker Dashboard"}
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+          <h1>{workerName ? `Welcome, ${workerName}` : "Worker Dashboard"}</h1>
+          {isLeadman && (
+            <span style={{
+              background: "#7c3aed22", color: "#7c3aed",
+              border: "1px solid #7c3aed44",
+              borderRadius: "99px", padding: "3px 12px",
+              fontSize: "11px", fontWeight: 800,
+              textTransform: "uppercase", letterSpacing: ".06em",
+            }}>
+              Leadman
+            </span>
+          )}
+        </div>
         <p style={{ color: "var(--text-muted)", marginTop: "4px", fontSize: "14px" }}>
-          Manage your pallet tasks and confirm deliveries via QR scan
+          {isLeadman
+            ? "Manage your tasks, truck scheduling, and incident reports"
+            : "Manage your pallet tasks and confirm deliveries via QR scan"}
         </p>
       </div>
 
@@ -55,6 +86,7 @@ function WorkerDashboard({ workerName }) {
           <span style={{ fontSize: "22px", fontWeight: 800,
                          color: activeTasks > 0 ? "#d97706" : "var(--text)" }}>{activeTasks}</span>
         </div>
+
         <div style={{
           background: "#f1f5f9", border: "1px solid var(--border)",
           borderRadius: "8px", padding: "10px 16px",
@@ -64,6 +96,7 @@ function WorkerDashboard({ workerName }) {
                          letterSpacing: ".05em", color: "var(--text-muted)" }}>Pending</span>
           <span style={{ fontSize: "22px", fontWeight: 800 }}>{pendingTasks}</span>
         </div>
+
         <div style={{
           background: "#f1f5f9", border: "1px solid var(--border)",
           borderRadius: "8px", padding: "10px 16px",
@@ -73,6 +106,7 @@ function WorkerDashboard({ workerName }) {
                          letterSpacing: ".05em", color: "var(--text-muted)" }}>Total Tasks</span>
           <span style={{ fontSize: "22px", fontWeight: 800 }}>{tasks.length}</span>
         </div>
+
         {scannedPallet && (
           <div style={{
             background: "#dbeafe", border: "1px solid #93c5fd",
@@ -88,7 +122,7 @@ function WorkerDashboard({ workerName }) {
 
       {/* Tabs */}
       <div className="tabs">
-        {TABS.map(t => (
+        {tabs.map(t => (
           <button
             key={t.key}
             className={`tab-btn ${activeTab === t.key ? "active" : ""}`}
@@ -122,6 +156,18 @@ function WorkerDashboard({ workerName }) {
           <PalletScanner onPalletScanned={id => { setScanned(id); fetchTasks(); }} />
         </div>
       )}
+
+      {activeTab === "incident" && (
+        <div className="card">
+          <h2 style={{ marginBottom: "4px" }}>Incident Reporting</h2>
+          <p style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px" }}>
+            Report accidents, near-misses, or safety hazards immediately.
+          </p>
+          <AccidentReport />
+        </div>
+      )}
+
+      {activeTab === "trucks" && isLeadman && <LeadmanTrucks />}
     </div>
   );
 }
