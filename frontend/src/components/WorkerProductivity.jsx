@@ -182,6 +182,52 @@ function LeadmanToggle({ worker, onToggled }) {
   );
 }
 
+/* ── Forklift operator toggle button ────────────────────────────────────── */
+function ForkliftToggle({ worker, onToggled }) {
+  const [loading, setLoading] = useState(false);
+  const [err,     setErr]     = useState(null);
+  const isFork = worker.is_forklift_operator === true || worker.is_forklift_operator === "t";
+
+  const toggle = async (e) => {
+    e.stopPropagation();
+    setLoading(true);
+    setErr(null);
+    try {
+      await axios.post(`${API}/workers/${worker.id}/toggle-forklift-operator`, {});
+      onToggled();
+    } catch (error) {
+      const msg = error.response?.data?.error
+        || (error.response ? `Server error ${error.response.status}` : error.message);
+      setErr(msg || "Request failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
+      <button
+        onClick={toggle}
+        disabled={loading}
+        title={isFork ? "Revoke forklift operator status" : "Designate as forklift operator"}
+        style={{
+          padding: "4px 10px",
+          borderRadius: "6px",
+          border: `1px solid ${isFork ? "#d9770666" : "var(--border)"}`,
+          background: isFork ? "#d9770618" : "transparent",
+          color: isFork ? "#d97706" : "var(--text-muted)",
+          fontSize: "11px", fontWeight: 700, cursor: loading ? "wait" : "pointer",
+          transition: "all .15s",
+        }}
+      >
+        {loading ? "Saving…" : isFork ? "🏗 Forklift Op." : "🏗 Set Forklift Op."}
+      </button>
+      {err && <span style={{ fontSize: "10px", color: "var(--danger)" }}>{err}</span>}
+    </div>
+  );
+}
+
+
 /* ── Delete confirm button ───────────────────────────────────────────────── */
 function DeleteButton({ worker, onDeleted }) {
   const [confirm, setConfirm] = useState(false);
@@ -304,6 +350,14 @@ function WorkerProductivity() {
                       textTransform: "uppercase", letterSpacing: ".04em",
                     }}>Leadman</span>
                   )}
+                  {(w.is_forklift_operator === true || w.is_forklift_operator === "t") && (
+                    <span style={{
+                      background: "#d9770618", color: "#d97706",
+                      borderRadius: "99px", padding: "2px 8px",
+                      fontSize: "10px", fontWeight: 800,
+                      textTransform: "uppercase", letterSpacing: ".04em",
+                    }}>🏗 Forklift</span>
+                  )}
                   {active > 0 && (
                     <span className="badge badge-yellow">{active} active</span>
                   )}
@@ -339,9 +393,12 @@ function WorkerProductivity() {
               </div>
 
               {/* Card actions — stop propagation so they don't trigger viewTasks */}
-              <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid var(--border)", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+              <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid var(--border)", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "6px" }}
                 onClick={e => e.stopPropagation()}>
-                <LeadmanToggle worker={w} onToggled={loadWorkers} />
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  <LeadmanToggle worker={w} onToggled={loadWorkers} />
+                  <ForkliftToggle worker={w} onToggled={loadWorkers} />
+                </div>
                 <DeleteButton worker={w} onDeleted={() => {
                   if (selected?.id === w.id) setSelected(null);
                   loadWorkers();

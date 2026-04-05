@@ -26,10 +26,14 @@ get '/inventory' do
       COALESCE(l.rack_id, l.label, 'Loc-' || l.id::text) AS location_name,
       l.location_type,
       d.name    AS destination_name,
-      d.region  AS destination_region
+      d.region  AS destination_region,
+      pr.name     AS product_name,
+      pr.sku      AS product_sku,
+      pr.category AS product_category
     FROM pallets p
-    LEFT JOIN locations l ON l.id = p.current_location_id
-    LEFT JOIN destinations d ON d.id = p.destination_id
+    LEFT JOIN locations    l  ON l.id  = p.current_location_id
+    LEFT JOIN destinations d  ON d.id  = p.destination_id
+    LEFT JOIN products     pr ON pr.id = p.product_id
     WHERE p.status IN ('stored', 'pending_storage')
     ORDER BY p.priority ASC, p.created_at ASC
   SQL

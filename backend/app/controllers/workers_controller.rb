@@ -22,6 +22,7 @@ get '/workers' do
         u.email,
         u.role,
         u.is_leadman,
+        u.is_forklift_operator,
         COUNT(t.id)                                          AS total_tasks,
         COUNT(t.id) FILTER (WHERE t.status = 'completed')   AS completed_tasks,
         COUNT(t.id) FILTER (WHERE t.status = 'in_progress') AS active_tasks,
@@ -35,12 +36,12 @@ get '/workers' do
       FROM users u
       LEFT JOIN tasks t ON t.worker_id = u.id
       WHERE u.role = 'worker'
-      GROUP BY u.id, u.name, u.email, u.role, u.is_leadman
+      GROUP BY u.id, u.name, u.email, u.role, u.is_leadman, u.is_forklift_operator
       ORDER BY completed_tasks DESC, u.name ASC
     SQL
   else
     workers = conn.exec(
-      "SELECT id, COALESCE(name, email) AS name, email, role, is_leadman
+      "SELECT id, COALESCE(name, email) AS name, email, role, is_leadman, is_forklift_operator
        FROM users WHERE role='worker' ORDER BY id"
     )
   end
@@ -124,6 +125,29 @@ post '/workers/:id/toggle-leadman' do
   )
 
   { id: params[:id].to_i, is_leadman: new_val }.to_json
+end
+
+
+# POST /workers/:id/toggle-forklift-operator — toggle forklift operator status
+post '/workers/:id/toggle-forklift-operator' do
+  require_manager(request)
+  conn = db_connection
+
+  result = conn.exec_params(
+    "SELECT id, role, is_forklift_operator FROM users WHERE id = $1", [params[:id]]
+  )
+  halt 404, { error: "Worker not found" }.to_json if result.ntuples == 0
+  halt 403, { error: "Managers cannot be assigned as forklift operators" }.to_json if result[0]['role'] == 'manager'
+
+  current = result[0]['is_forklift_operator'] == 't'
+  new_val = !current
+
+  conn.exec_params(
+    "UPDATE users SET is_forklift_operator = $1 WHERE id = $2",
+    [new_val, params[:id]]
+  )
+
+  { id: params[:id].to_i, is_forklift_operator: new_val }.to_json
 end
 
 
