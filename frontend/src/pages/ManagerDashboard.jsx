@@ -23,7 +23,7 @@ const TABS = [
   { key: "alerts",     label: "⚠️ Alerts"             },
 ];
 
-function ManagerDashboard({ onLogout }) {
+function ManagerDashboard() {
   const [layout, setLayout]       = useState(null);
   const [layoutError, setLayoutError] = useState(null);
   const [activeTab, setTab]       = useState("overview");
