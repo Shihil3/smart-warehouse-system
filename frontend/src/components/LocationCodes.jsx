@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { QRCodeSVG } from "qrcode.react";
 
 const API = "http://localhost:4567";
 
@@ -107,33 +108,23 @@ function LocationCodes() {
                   <span className={`badge ${typeCfg.cls}`}>{typeCfg.label}</span>
                 </div>
 
-                {/* QR Code visual (text-based placeholder) */}
+                {/* Real scannable QR code */}
                 <div style={{
-                  background:    "#0f172a",
+                  background:    "#fff",
                   borderRadius:  "8px",
-                  padding:       "14px",
+                  padding:       "12px",
                   textAlign:     "center",
-                  fontFamily:    "monospace",
-                  position:      "relative",
-                  overflow:      "hidden",
+                  border:        "1px solid var(--border)",
                 }}>
-                  {/* Faux QR pattern */}
-                  <div style={{
-                    display:    "grid",
-                    gridTemplateColumns: "repeat(7, 14px)",
-                    gap:        "2px",
-                    justifyContent: "center",
-                    marginBottom: "10px",
-                  }}>
-                    {QR_PATTERN.map((cell, i) => (
-                      <div key={i} style={{
-                        width: "14px", height: "14px",
-                        background: cell ? "#fff" : "transparent",
-                        borderRadius: "1px",
-                      }} />
-                    ))}
-                  </div>
-                  <div style={{ color: "#fff", fontSize: "13px", fontWeight: 700, letterSpacing: ".05em" }}>
+                  <QRCodeSVG
+                    value={qrCode}
+                    size={160}
+                    bgColor="#ffffff"
+                    fgColor="#0f172a"
+                    level="M"
+                  />
+                  <div style={{ marginTop: "8px", fontSize: "12px", fontWeight: 700,
+                                fontFamily: "monospace", color: "#1e293b" }}>
                     {qrCode}
                   </div>
                 </div>
@@ -165,15 +156,5 @@ function LocationCodes() {
   );
 }
 
-// Simple fixed pattern for visual faux-QR decoration (7x7 = 49 cells)
-const QR_PATTERN = [
-  1,1,1,1,1,1,1,
-  1,0,0,0,0,0,1,
-  1,0,1,0,1,0,1,
-  1,0,0,1,0,0,1,
-  1,0,1,0,1,0,1,
-  1,0,0,0,0,0,1,
-  1,1,1,1,1,1,1,
-];
 
 export default LocationCodes;
