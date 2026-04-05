@@ -27,12 +27,16 @@ post '/products' do
 end
 
 
-# Get Products
+# Get Products — accessible to all authenticated users
 get '/products' do
-  require_manager(request)
+  require_worker(request)
   conn = db_connection
 
-  products = conn.exec("SELECT * FROM products")
+  products = conn.exec(
+    "SELECT id, sku, name, category, weight, volume,
+            TO_CHAR(created_at, 'YYYY-MM-DD\"T\"HH24:MI:SS') AS created_at
+     FROM products ORDER BY name ASC"
+  )
 
   products.to_a.to_json
 end

@@ -90,7 +90,7 @@ function InboundTab() {
 }
 
 /* ── Outbound Tab ────────────────────────────────────────────────────── */
-function OutboundTab() {
+function OutboundTab({ isLeadman = false }) {
   const [trucks, setTrucks]      = useState([]);
   const [destinations, setDests] = useState([]);
   const [msg, setMsg]            = useState(null);
@@ -243,7 +243,13 @@ function OutboundTab() {
                   </td>
                   <td><span className={`badge ${statusBadge(t.status)}`}>{t.status}</span></td>
                   <td>
-                    <DepartureButton truck={t} onDeparted={fetchTrucks} />
+                    {isLeadman ? (
+                      <span style={{ fontSize: "11px", color: "var(--text-muted)", fontStyle: "italic" }}>
+                        Manager only
+                      </span>
+                    ) : (
+                      <DepartureButton truck={t} onDeparted={fetchTrucks} />
+                    )}
                   </td>
                 </tr>
               );
@@ -256,7 +262,7 @@ function OutboundTab() {
 }
 
 /* ── TruckManagement ─────────────────────────────────────────────────── */
-function TruckManagement() {
+function TruckManagement({ isLeadman = false }) {
   const [activeTab, setActiveTab] = useState("outbound");
 
   return (
@@ -270,7 +276,7 @@ function TruckManagement() {
           Inbound Trucks
         </button>
       </div>
-      {activeTab === "outbound" ? <OutboundTab /> : <InboundTab />}
+      {activeTab === "outbound" ? <OutboundTab isLeadman={isLeadman} /> : <InboundTab />}
     </div>
   );
 }

@@ -14,6 +14,8 @@ class TruckRepository
       LIMIT 1
     ")[0]
 
+    halt 422, { error: "No dock locations configured in the warehouse." }.to_json unless dock
+
     dock_id = dock["id"]
 
     conn.exec_params(

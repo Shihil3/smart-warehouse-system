@@ -4,9 +4,9 @@ require_relative '../../config/database'
 require_relative '../repositories/truck_repository'
 require_relative '../services/event_logger'
 
-# POST /outbound-trucks — schedule a new truck
+# POST /outbound-trucks — leadmen and managers can schedule trucks
 post '/outbound-trucks' do
-  require_manager(request)
+  require_leadman_or_manager(request)
   data  = JSON.parse(request.body.read)
   truck = TruckRepository.create(data)
   detect_dock_congestion

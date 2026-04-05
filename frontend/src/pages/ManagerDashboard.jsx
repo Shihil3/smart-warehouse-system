@@ -9,31 +9,51 @@ import InventoryView       from "../components/InventoryView";
 import DashboardCharts     from "../components/DashboardCharts";
 import WorkerProductivity  from "../components/WorkerProductivity";
 import KpiDashboard        from "../components/KpiDashboard";
+import AccidentReport      from "../components/AccidentReport";
+import TaskAssignment     from "../components/TaskAssignment";
+import ProductManagement  from "../components/ProductManagement";
 
 const TABS = [
   { key: "overview",   label: "📊 Overview"          },
   { key: "inventory",  label: "🏪 Inventory"          },
+  { key: "tasks",      label: "✅ Tasks"               },
+  { key: "products",   label: "📦 Products"            },
   { key: "racks",      label: "🗄️ Rack Tracking"     },
   { key: "trucks",     label: "🚛 Truck Management"   },
   { key: "workers",    label: "👷 Workers"            },
   { key: "kpis",       label: "📈 KPIs"               },
+  { key: "incidents",  label: "🚨 Incidents"          },
   { key: "locations",  label: "🏷️ Location QR Codes" },
   { key: "alerts",     label: "⚠️ Alerts"             },
 ];
 
-function ManagerDashboard({ onLogout }) {
-  const [layout, setLayout]   = useState(null);
-  const [activeTab, setTab]   = useState("overview");
+function ManagerDashboard() {
+  const [layout, setLayout]       = useState(null);
+  const [layoutError, setLayoutError] = useState(null);
+  const [activeTab, setTab]       = useState("overview");
 
-  useEffect(() => {
+  const loadLayout = () => {
+    setLayoutError(null);
     axios.get("http://localhost:4567/layout")
-      .then(res => setLayout(res.data));
-  }, []);
+      .then(res => setLayout(res.data))
+      .catch(() => setLayoutError("Could not load warehouse layout. Check the backend server."));
+  };
 
-  if (!layout) {
+  useEffect(() => { loadLayout(); }, []);
+
+  if (!layout && !layoutError) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "40vh" }}>
         <p style={{ color: "var(--text-muted)" }}>Loading warehouse…</p>
+      </div>
+    );
+  }
+
+  if (layoutError) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "40vh", gap: "12px" }}>
+        <div className="msg-error">{layoutError}</div>
+        <button className="btn btn-primary" onClick={loadLayout}>Retry</button>
       </div>
     );
   }
@@ -123,6 +143,26 @@ function ManagerDashboard({ onLogout }) {
           </div>
         )}
 
+        {activeTab === "tasks" && (
+          <div>
+            <h2 style={{ marginBottom: "4px" }}>Task Assignment</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px" }}>
+              Assign pending tasks to workers. Forklift operators are highlighted in the assignment dropdown.
+            </p>
+            <TaskAssignment />
+          </div>
+        )}
+
+        {activeTab === "products" && (
+          <div>
+            <h2 style={{ marginBottom: "4px" }}>Products</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px" }}>
+              Manage the product catalogue. Products are linked to pallets when they arrive.
+            </p>
+            <ProductManagement />
+          </div>
+        )}
+
         {activeTab === "trucks" && <TruckManagement />}
 
         {activeTab === "workers" && (
@@ -136,6 +176,16 @@ function ManagerDashboard({ onLogout }) {
         )}
 
         {activeTab === "kpis" && <KpiDashboard />}
+
+        {activeTab === "incidents" && (
+          <div>
+            <h2 style={{ marginBottom: "4px" }}>Incident Reports</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "13px", marginBottom: "20px" }}>
+              Review and resolve accident and hazard reports from workers.
+            </p>
+            <AccidentReport />
+          </div>
+        )}
 
         {activeTab === "locations" && (
           <div>

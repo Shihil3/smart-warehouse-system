@@ -284,7 +284,7 @@ function KpiDashboard() {
                   </div>
                   <div className="progress-bar-bg">
                     <div className="progress-bar-fill" style={{
-                      width: `${Math.round((count / Math.max(...Object.values(trucks))) * 100)}%`,
+                      width: `${Math.round((count / Math.max(...Object.values(trucks).map(Number).filter(n => !isNaN(n)), 1)) * 100)}%`,
                       background: status === "departed" ? "#7c3aed" : status === "scheduled" ? "var(--success)" : "var(--accent)",
                     }} />
                   </div>

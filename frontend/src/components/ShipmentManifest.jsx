@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 
 const API = "http://localhost:4567";
@@ -25,7 +25,7 @@ function ManifestModal({ truck, onClose, onDeparted }) {
   const [error, setError]         = useState(null);
 
   // Load full truck detail with pallets on open
-  useState(() => {
+  useEffect(() => {
     setLoading(true);
     axios.get(`${API}/outbound-trucks/${truck.id}`)
       .then(res => setManifest(res.data))

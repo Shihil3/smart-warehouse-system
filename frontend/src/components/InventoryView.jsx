@@ -132,6 +132,7 @@ function InventoryView() {
           <thead>
             <tr>
               <th>Pallet</th>
+              <th>Product</th>
               <th>Status</th>
               <th>Priority</th>
               <th>Weight</th>
@@ -152,6 +153,12 @@ function InventoryView() {
                 <>
                   <tr key={p.id}>
                     <td style={{ fontWeight: 700 }}>P-{p.id}</td>
+                    <td>
+                      {p.product_name
+                        ? <><div style={{ fontWeight: 600 }}>{p.product_name}</div>
+                            <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{p.product_sku}</div></>
+                        : <span style={{ color: "var(--text-muted)" }}>—</span>}
+                    </td>
                     <td><span className={`badge ${stCfg.cls}`}>{stCfg.label}</span></td>
                     <td><span className={`badge ${priCfg.cls}`}>{priCfg.label}</span></td>
                     <td>{p.weight ? `${p.weight} kg` : "—"}</td>
@@ -184,7 +191,7 @@ function InventoryView() {
                   </tr>
                   {msg && (
                     <tr key={`msg-${p.id}`}>
-                      <td colSpan={8} style={{ padding: "6px 14px 10px" }}>
+                      <td colSpan={9} style={{ padding: "6px 14px 10px" }}>
                         <div className={msg.type === "success" ? "msg-success" : "msg-error"}>
                           {msg.text}
                         </div>

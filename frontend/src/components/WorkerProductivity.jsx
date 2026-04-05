@@ -3,6 +3,7 @@ import axios from "axios";
 
 const API = "http://localhost:4567";
 
+/* ── Helpers ─────────────────────────────────────────────────────────────── */
 function Avatar({ name }) {
   const initials = name ? name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "?";
   const colors   = ["#2563eb","#16a34a","#d97706","#dc2626","#7c3aed","#0891b2"];
@@ -31,18 +32,255 @@ function MiniBar({ value, max, color }) {
   );
 }
 
-function WorkerProductivity() {
-  const [workers, setWorkers]   = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [tasks, setTasks]       = useState([]);
-  const [loading, setLoading]   = useState(true);
+/* ── Add Worker Form ─────────────────────────────────────────────────────── */
+function AddWorkerForm({ onAdded }) {
+  const [open,       setOpen]       = useState(false);
+  const [name,       setName]       = useState("");
+  const [email,      setEmail]      = useState("");
+  const [password,   setPassword]   = useState("");
+  const [showPass,   setShowPass]   = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error,      setError]      = useState(null);
 
-  useEffect(() => {
+  const reset = () => { setName(""); setEmail(""); setPassword(""); setError(null); };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await axios.post(`${API}/workers`, { name, email, password });
+      reset();
+      setOpen(false);
+      onAdded();
+    } catch (err) {
+      setError(err.response?.data?.error || "Failed to create worker.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button className="btn btn-primary" style={{ fontSize: "13px" }} onClick={() => setOpen(true)}>
+        + Add Worker
+      </button>
+    );
+  }
+
+  return (
+    <div style={{
+      background: "var(--bg-card)",
+      border: "1px solid var(--border)",
+      borderRadius: "10px",
+      padding: "20px 24px",
+      marginBottom: "24px",
+      boxShadow: "0 2px 8px rgba(0,0,0,.07)",
+    }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+        <h3 style={{ margin: 0 }}>Add New Worker</h3>
+        <button className="btn btn-ghost" style={{ fontSize: "12px" }}
+          onClick={() => { setOpen(false); reset(); }}>
+          Cancel
+        </button>
+      </div>
+
+      {error && <div className="msg-error" style={{ marginBottom: "14px" }}>{error}</div>}
+
+      <form onSubmit={submit}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px", marginBottom: "16px" }}>
+          <div className="form-group">
+            <label className="form-label">Full Name *</label>
+            <input className="input" value={name} onChange={e => setName(e.target.value)}
+              placeholder="e.g. John Smith" required />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Email *</label>
+            <input className="input" type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="worker@warehouse.com" required />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password *</label>
+            <div style={{ position: "relative" }}>
+              <input
+                className="input"
+                type={showPass ? "text" : "password"}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="Min 6 characters"
+                style={{ paddingRight: "40px" }}
+                required
+                minLength={6}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPass(v => !v)}
+                style={{
+                  position: "absolute", right: "8px", top: "50%", transform: "translateY(-50%)",
+                  background: "none", border: "none", cursor: "pointer",
+                  fontSize: "13px", color: "var(--text-muted)",
+                }}
+              >
+                {showPass ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <button className="btn btn-primary" type="submit" disabled={submitting}>
+          {submitting ? "Creating…" : "Create Worker Account"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+/* ── Leadman toggle button ───────────────────────────────────────────────── */
+function LeadmanToggle({ worker, onToggled }) {
+  const [loading, setLoading] = useState(false);
+  const [err,     setErr]     = useState(null);
+  const isLeadman = worker.is_leadman === true || worker.is_leadman === "t";
+
+  const toggle = async (e) => {
+    e.stopPropagation();
+    setLoading(true);
+    setErr(null);
+    try {
+      await axios.post(`${API}/workers/${worker.id}/toggle-leadman`, {});
+      onToggled();
+    } catch (error) {
+      const msg = error.response?.data?.error
+        || (error.response ? `Server error ${error.response.status}` : error.message);
+      setErr(msg || "Request failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
+      <button
+        onClick={toggle}
+        disabled={loading}
+        title={isLeadman ? "Revoke leadman status" : "Promote to leadman"}
+        style={{
+          padding: "4px 10px",
+          borderRadius: "6px",
+          border: `1px solid ${isLeadman ? "#7c3aed66" : "var(--border)"}`,
+          background: isLeadman ? "#7c3aed18" : "transparent",
+          color: isLeadman ? "#7c3aed" : "var(--text-muted)",
+          fontSize: "11px", fontWeight: 700, cursor: loading ? "wait" : "pointer",
+          transition: "all .15s",
+        }}
+      >
+        {loading ? "Saving…" : isLeadman ? "★ Leadman" : "☆ Set Leadman"}
+      </button>
+      {err && <span style={{ fontSize: "10px", color: "var(--danger)" }}>{err}</span>}
+    </div>
+  );
+}
+
+/* ── Forklift operator toggle button ────────────────────────────────────── */
+function ForkliftToggle({ worker, onToggled }) {
+  const [loading, setLoading] = useState(false);
+  const [err,     setErr]     = useState(null);
+  const isFork = worker.is_forklift_operator === true || worker.is_forklift_operator === "t";
+
+  const toggle = async (e) => {
+    e.stopPropagation();
+    setLoading(true);
+    setErr(null);
+    try {
+      await axios.post(`${API}/workers/${worker.id}/toggle-forklift-operator`, {});
+      onToggled();
+    } catch (error) {
+      const msg = error.response?.data?.error
+        || (error.response ? `Server error ${error.response.status}` : error.message);
+      setErr(msg || "Request failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "4px" }}>
+      <button
+        onClick={toggle}
+        disabled={loading}
+        title={isFork ? "Revoke forklift operator status" : "Designate as forklift operator"}
+        style={{
+          padding: "4px 10px",
+          borderRadius: "6px",
+          border: `1px solid ${isFork ? "#d9770666" : "var(--border)"}`,
+          background: isFork ? "#d9770618" : "transparent",
+          color: isFork ? "#d97706" : "var(--text-muted)",
+          fontSize: "11px", fontWeight: 700, cursor: loading ? "wait" : "pointer",
+          transition: "all .15s",
+        }}
+      >
+        {loading ? "Saving…" : isFork ? "🏗 Forklift Op." : "🏗 Set Forklift Op."}
+      </button>
+      {err && <span style={{ fontSize: "10px", color: "var(--danger)" }}>{err}</span>}
+    </div>
+  );
+}
+
+
+/* ── Delete confirm button ───────────────────────────────────────────────── */
+function DeleteButton({ worker, onDeleted }) {
+  const [confirm, setConfirm] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const doDelete = async () => {
+    setLoading(true);
+    try {
+      await axios.delete(`${API}/workers/${worker.id}`);
+      onDeleted();
+    } catch { /* silently fail — might have tasks */ }
+    finally { setLoading(false); setConfirm(false); }
+  };
+
+  if (confirm) {
+    return (
+      <div style={{ display: "flex", gap: "6px" }}>
+        <button className="btn btn-danger" style={{ fontSize: "11px", padding: "4px 10px" }}
+          onClick={doDelete} disabled={loading}>
+          {loading ? "…" : "Confirm"}
+        </button>
+        <button className="btn btn-ghost" style={{ fontSize: "11px", padding: "4px 10px" }}
+          onClick={() => setConfirm(false)}>
+          No
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button className="btn btn-ghost" style={{ fontSize: "11px", padding: "4px 10px", color: "var(--danger)" }}
+      onClick={() => setConfirm(true)}>
+      Remove
+    </button>
+  );
+}
+
+/* ── Main component ──────────────────────────────────────────────────────── */
+function WorkerProductivity() {
+  const [workers,  setWorkers]  = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [tasks,    setTasks]    = useState([]);
+  const [loading,  setLoading]  = useState(true);
+
+  const loadWorkers = () => {
+    setLoading(true);
     axios.get(`${API}/workers`)
       .then(res => setWorkers(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadWorkers(); }, []);
 
   const viewTasks = (worker) => {
     setSelected(worker);
@@ -57,6 +295,14 @@ function WorkerProductivity() {
 
   return (
     <div>
+      {/* Add Worker form */}
+      <AddWorkerForm onAdded={loadWorkers} />
+
+      {/* Worker count summary */}
+      <div style={{ marginBottom: "16px", fontSize: "13px", color: "var(--text-muted)" }}>
+        {workers.length} worker{workers.length !== 1 ? "s" : ""} registered
+      </div>
+
       {/* Worker cards */}
       <div style={{
         display: "grid",
@@ -66,7 +312,7 @@ function WorkerProductivity() {
       }}>
         {workers.length === 0 ? (
           <p style={{ color: "var(--text-muted)", fontStyle: "italic", gridColumn: "1/-1" }}>
-            No workers found.
+            No workers yet. Add one above.
           </p>
         ) : workers.map(w => {
           const completed  = parseInt(w.completed_tasks)  || 0;
@@ -87,15 +333,35 @@ function WorkerProductivity() {
             }} onClick={() => viewTasks(w)}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
                 <Avatar name={w.name} />
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: "14px" }}>{w.name}</div>
-                  <div style={{ fontSize: "11px", color: "var(--text-muted)" }}>{w.email}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: "14px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {w.name}
+                  </div>
+                  <div style={{ fontSize: "11px", color: "var(--text-muted)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                    {w.email}
+                  </div>
                 </div>
-                {active > 0 && (
-                  <span className="badge badge-yellow" style={{ marginLeft: "auto" }}>
-                    {active} active
-                  </span>
-                )}
+                <div style={{ marginLeft: "auto", display: "flex", gap: "4px", flexWrap: "wrap" }}>
+                  {(w.is_leadman === true || w.is_leadman === "t") && (
+                    <span style={{
+                      background: "#7c3aed18", color: "#7c3aed",
+                      borderRadius: "99px", padding: "2px 8px",
+                      fontSize: "10px", fontWeight: 800,
+                      textTransform: "uppercase", letterSpacing: ".04em",
+                    }}>Leadman</span>
+                  )}
+                  {(w.is_forklift_operator === true || w.is_forklift_operator === "t") && (
+                    <span style={{
+                      background: "#d9770618", color: "#d97706",
+                      borderRadius: "99px", padding: "2px 8px",
+                      fontSize: "10px", fontWeight: 800,
+                      textTransform: "uppercase", letterSpacing: ".04em",
+                    }}>🏗 Forklift</span>
+                  )}
+                  {active > 0 && (
+                    <span className="badge badge-yellow">{active} active</span>
+                  )}
+                </div>
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -124,6 +390,19 @@ function WorkerProductivity() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* Card actions — stop propagation so they don't trigger viewTasks */}
+              <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid var(--border)", display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "6px" }}
+                onClick={e => e.stopPropagation()}>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  <LeadmanToggle worker={w} onToggled={loadWorkers} />
+                  <ForkliftToggle worker={w} onToggled={loadWorkers} />
+                </div>
+                <DeleteButton worker={w} onDeleted={() => {
+                  if (selected?.id === w.id) setSelected(null);
+                  loadWorkers();
+                }} />
               </div>
             </div>
           );
@@ -157,16 +436,21 @@ function WorkerProductivity() {
               </thead>
               <tbody>
                 {tasks.map(t => {
-                  const dur = t.started_at && t.completed_at
+                  const durRaw = t.started_at && t.completed_at
                     ? Math.round((new Date(t.completed_at) - new Date(t.started_at)) / 60000)
                     : null;
+                  const dur = durRaw !== null && !isNaN(durRaw) ? durRaw : null;
                   return (
                     <tr key={t.id}>
                       <td style={{ color: "var(--text-muted)" }}>{t.sequence_order ?? "—"}</td>
                       <td style={{ fontWeight: 600 }}>P-{t.pallet_id}</td>
                       <td>{t.source_label || `Loc ${t.source_location_id}`}</td>
                       <td>{t.dest_label   || `Loc ${t.destination_location_id}`}</td>
-                      <td><span className={`badge ${t.status === "completed" ? "badge-green" : t.status === "in_progress" ? "badge-yellow" : "badge-gray"}`}>{t.status}</span></td>
+                      <td>
+                        <span className={`badge ${t.status === "completed" ? "badge-green" : t.status === "in_progress" ? "badge-yellow" : "badge-gray"}`}>
+                          {t.status}
+                        </span>
+                      </td>
                       <td style={{ fontSize: "12px" }}>{t.started_at   ? new Date(t.started_at).toLocaleString()   : "—"}</td>
                       <td style={{ fontSize: "12px" }}>{t.completed_at ? new Date(t.completed_at).toLocaleString() : "—"}</td>
                       <td style={{ fontWeight: 600 }}>{dur !== null ? `${dur}m` : "—"}</td>

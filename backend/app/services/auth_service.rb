@@ -10,19 +10,22 @@ def authenticate_user(email, password)
   return nil unless user
 
   if BCrypt::Password.new(user["password_hash"]) == password
+    is_leadman = user["is_leadman"] == "t" || user["is_leadman"] == true
     payload = {
-      user_id: user["id"].to_i,
-      email:   user["email"],
-      name:    user["name"] || user["email"].split("@").first,
-      role:    user["role"],
-      exp:     Time.now.to_i + 86400
+      user_id:    user["id"].to_i,
+      email:      user["email"],
+      name:       user["name"] || user["email"].split("@").first,
+      role:       user["role"],
+      is_leadman: is_leadman,
+      exp:        Time.now.to_i + 86400
     }
     token = JWT.encode(payload, SECRET_KEY, 'HS256')
     {
-      token: token,
-      role:  user["role"],
-      name:  payload[:name],
-      user_id: user["id"].to_i
+      token:      token,
+      role:       user["role"],
+      name:       payload[:name],
+      user_id:    user["id"].to_i,
+      is_leadman: is_leadman,
     }
   else
     nil
