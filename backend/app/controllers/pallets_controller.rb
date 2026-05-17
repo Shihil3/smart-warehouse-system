@@ -21,45 +21,63 @@ end
 # Shared logic: decide cross-dock vs storage, build tasks
 # -----------------------------------------------------------
 def process_new_pallet(pallet)
-  pallet_id          = pallet["id"]
-  staging_location   = pallet["current_location_id"].to_i
+  pallet_id        = pallet["id"]
+  staging_location = pallet["current_location_id"].to_i
 
-  # 1. Try to assign to an outbound truck (cross-dock path)
-  truck_id = assign_pallet_to_truck(pallet_id)
+  # Validate pallet has required references before routing
+  unless pallet["product_id"] && pallet["destination_id"]
+    puts "WARN: pallet #{pallet_id} missing product_id or destination_id — skipping routing"
+    return { workflow: "incomplete", message: "Pallet missing product or destination reference." }
+  end
+
+  truck_id = begin
+    assign_pallet_to_truck(pallet_id)
+  rescue => e
+    puts "WARN: assign_pallet_to_truck failed for pallet #{pallet_id}: #{e.message}"
+    nil
+  end
 
   if truck_id
-    # ── CROSS-DOCK ──────────────────────────────────────────
-    # Re-run optimizer for all pending cross-dock pallets and
-    # regenerate their task sequence.
-    sequence = trigger_optimizer
-    generate_tasks(sequence)
+    sequence = begin
+      trigger_optimizer
+    rescue => e
+      puts "WARN: optimizer failed: #{e.message}"
+      { "sequence" => [] }
+    end
+
+    begin
+      generate_tasks(sequence)
+    rescue => e
+      puts "WARN: generate_tasks failed: #{e.message}"
+    end
 
     {
-      workflow:             "cross_dock",
-      assigned_truck_id:    truck_id.to_i,
+      workflow:              "cross_dock",
+      assigned_truck_id:     truck_id.to_i,
       optimization_sequence: sequence
     }
   else
-    # ── STORAGE ─────────────────────────────────────────────
-    # No truck available — find the best rack with free capacity.
-    rack = assign_pallet_to_rack(pallet_id)
+    rack = begin
+      assign_pallet_to_rack(pallet_id)
+    rescue => e
+      puts "WARN: assign_pallet_to_rack failed for pallet #{pallet_id}: #{e.message}"
+      nil
+    end
 
     if rack
-      generate_storage_task(pallet_id, staging_location, rack["id"].to_i)
-
-      {
-        workflow:          "storage",
-        assigned_rack_id:  rack["id"].to_i,
-        rack_name:         rack["name"]
-      }
+      begin
+        generate_storage_task(pallet_id, staging_location, rack["id"].to_i)
+      rescue => e
+        puts "WARN: generate_storage_task failed: #{e.message}"
+      end
+      { workflow: "storage", assigned_rack_id: rack["id"].to_i, rack_name: rack["name"] }
     else
-      # No rack capacity either — pallet stays at staging, no task yet
-      {
-        workflow: "no_capacity",
-        message:  "No outbound truck or rack available. Pallet is waiting at staging."
-      }
+      { workflow: "no_capacity", message: "No outbound truck or rack available. Pallet is waiting at staging." }
     end
   end
+rescue => e
+  puts "ERROR: process_new_pallet raised unhandled exception for pallet #{pallet_id}: #{e.message}"
+  { workflow: "error", message: "Processing failed safely. Pallet created but not routed." }
 end
 
 
