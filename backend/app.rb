@@ -10,8 +10,20 @@ before do
   response.headers['Access-Control-Allow-Origin']  = '*'
   response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization, X-Requested-With'
   response.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,PATCH,DELETE,OPTIONS'
-  # Default all responses to JSON — SSE and any HTML endpoints override this themselves
   content_type :json unless request.path_info == '/stream'
+end
+
+# Global error handler — prevents unhandled exceptions from crashing the server
+error 500 do
+  env['sinatra.error']&.tap { |e| puts "UNHANDLED 500: #{e.class}: #{e.message}" }
+  content_type :json
+  { error: "Internal server error. The operation failed safely.", detail: env['sinatra.error']&.message }.to_json
+end
+
+error 400..499 do
+  # Ensure 4xx errors always return JSON even if raised outside a JSON context
+  content_type :json
+  { error: "Request error (#{response.status})" }.to_json unless response.body&.first&.include?('"error"')
 end
 
 options "*" do

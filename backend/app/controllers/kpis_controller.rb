@@ -126,4 +126,7 @@ get '/kpis' do
     worker_productivity:   worker_productivity,
     recent_events:         recent_events,
   }.to_json
+rescue => e
+  puts "ERROR in /kpis: #{e.message}\n#{e.backtrace.first(3).join("\n")}"
+  halt 500, { error: "KPI query failed", detail: e.message }.to_json
 end
